@@ -1,0 +1,6 @@
+const SETTINGS = {
+  STATS_LABEL_X_POS: 20,
+  RIGHT_PADDING: 20
+}
+
+export default SETTINGS;

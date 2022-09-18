@@ -1,0 +1,43 @@
+{
+  "name": "daily-stats-clockface",
+  "version": "0.1.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "@fitbit/sdk": "~4.3.0",
+    "@fitbit/sdk-cli": "^1.7.3",
+    "@types/node": "^18.7.18",
+    "fitbit-sdk-types": "^8.0.0",
+    "fitfont": "^1.3.3",
+    "typescript": "^4.8.3"
+  },
+  "fitbit": {
+    "appUUID": "7d2bb7e1-01ea-4c96-8abf-b703298c9ac8",
+    "appType": "clockface",
+    "appDisplayName": "Daily Stats Clockface",
+    "iconFile": "resources/icon.png",
+    "wipeColor": "#ffffff",
+    "requestedPermissions": [
+      "access_activity",
+      "access_location",
+      "access_internet",
+      "run_background",
+      "access_exercise",
+      "access_calendar",
+      "access_sleep",
+      "access_user_profile",
+      "access_heart_rate"
+    ],
+    "buildTargets": [
+      "meson",
+      "gemini",
+      "mira"
+    ],
+    "i18n": {},
+    "defaultLanguage": "en-US"
+  },
+  "scripts": {
+    "build": "fitbit-build",
+    "debug": "fitbit"
+  }
+}

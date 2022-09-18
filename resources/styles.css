@@ -1,0 +1,102 @@
+.defaultText {
+  font-size: 32;
+  text-length: 32;
+  fill: white;
+}
+
+#background {
+  width: 100%;
+  height: 100%;
+}
+
+#time-label {
+  x: 9;
+  y: 48;
+  font-size: 55;
+  letter-spacing: 6;
+  font-family: System-Light;
+}
+#day-label {
+  x: 9;
+  y: 85;
+  font-family: System-Bold;
+}
+
+#date-label {
+  x: 85;
+  y: 85;
+  font-family: System-Light;
+}
+
+#battery-indicator {
+  x: 250;
+  y: 0;
+  width: 40;
+  height: 40;
+}
+
+.stats-container {
+  height: 30;
+  x: 10;
+}
+
+.stats-container > rect {
+  height: 100%;
+}
+
+.stats-container > text {
+  x: 40;
+  y: 23;
+  fill: white;
+  font-family: System-Bold;
+  font-size: 24;
+  text-length: 50;
+}
+
+.stats-container > image {
+  x: 5;
+  y: 5;
+  height: 20;
+  width: 20;
+}
+
+#heart-rate-container {
+  y: 100;
+}
+
+#heart-rate-container > rect {
+  fill: #f74848;
+}
+
+#steps-container {
+  y: 140;
+}
+
+#steps-container > rect {
+  fill: #04aed8;
+}
+
+#floors-container {
+  y: 180;
+}
+
+#floors-container > rect {
+  fill: #00b95d;
+}
+
+#zone-mins-container {
+  y: 220;
+}
+
+#zone-mins-container > rect {
+  fill: #ff4463;
+}
+
+#cals-container {
+  y: 260;
+}
+
+#cals-container > rect {
+  
+  fill: #e45c02;
+}

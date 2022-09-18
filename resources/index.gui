@@ -1,0 +1,32 @@
+<svg id="root">
+  <rect id="background" />
+  <text id="time-label" class="defaultText">00:00</text>
+  <text id="day-label" class="defaultText" />
+  <text id="date-label" class="defaultText" />
+  <image id="battery-indicator" />
+  <svg id="heart-rate-container" class="stats-container">
+    <rect id="heart-rate-rect" />
+    <image href="icons/heartrate.png"/>
+    <text id="heart-rate-label">--</text>
+  </svg>
+  <svg id="steps-container" class="stats-container">
+    <rect id="steps-rect" />
+    <image href="icons/steps.png"/>
+    <text id="steps-label">--</text>
+  </svg>
+  <svg id="floors-container" class="stats-container">
+    <rect id="floors-rect" />
+    <image href="icons/elevation.png"/>
+    <text id="floors-label">--</text>
+  </svg>
+  <svg id="zone-mins-container" class="stats-container">
+    <rect id="zone-mins-rect" />
+    <image href="icons/active.png"/>
+    <text id="zone-mins-label">--</text>
+  </svg>
+  <svg id="cals-container" class="stats-container">
+    <rect id="cals-rect" />
+    <image href="icons/calories.png"/>
+    <text id="cals-label">--</text>
+  </svg>
+</svg>
