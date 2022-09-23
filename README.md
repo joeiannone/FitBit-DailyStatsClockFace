@@ -1,5 +1,5 @@
 # FitBit-DailyStatsClockFace
----
+
 ### A straighforward FitBit clock face for tracking real-time and daily activity stats
 
 **Target devices:**

@@ -1,15 +1,23 @@
 import document from "document";
 import clock, { TickEvent } from "clock";
 import { preferences } from "user-settings";
-import { me as appbit } from "appbit";
 import { HeartRateSensor } from "heart-rate";
 import { today, goals } from "user-activity";
 import { me as device } from "device";
 import { battery } from "power";
+import { display } from "display";
+import { BodyPresenceSensor } from "body-presence";
 import SETTINGS from './settings';
 import { GetProgressBarWidth, formatTimeString } from './utils';
+import { DailyActivityManager } from "./dailyActivity";
 
 const STAT_RECT_MAX_WIDTH : number = device.screen.width - SETTINGS.RIGHT_PADDING;
+
+var dailyActivityInterval : NodeJS.Timer;
+const dailyActivityManager : DailyActivityManager = new DailyActivityManager(1);
+
+if (BodyPresenceSensor)
+  var body : BodyPresenceSensor = new BodyPresenceSensor();
 
 const dateLabel : Element = document.getElementById('date-label');
 const dayLabel : Element = document.getElementById('day-label');
@@ -76,16 +84,16 @@ battery.onchange = (evt : Event) => {
 /**
  * Heart Rate
  */
-if (appbit.permissions.granted("access_heart_rate")) {
-  if (HeartRateSensor) {
-    const hrm = new HeartRateSensor({ frequency: 1 });
-    hrm.onreading = () => {
-      heartRateLabel.text = `${hrm.heartRate}`;
-      heartRateRect.width = GetProgressBarWidth(hrm.heartRate, 220, STAT_RECT_MAX_WIDTH);
-    }
-    hrm.start();
+
+if (HeartRateSensor) { 
+  const hrm : HeartRateSensor = new HeartRateSensor({ frequency: 1 });
+  hrm.onreading = () => {
+    heartRateLabel.text = `${hrm.heartRate}`;
+    heartRateRect.width = GetProgressBarWidth(hrm.heartRate, 220, STAT_RECT_MAX_WIDTH);
   }
+  hrm.start();
 }
+
 
 
 /**
@@ -94,15 +102,16 @@ if (appbit.permissions.granted("access_heart_rate")) {
 /**
  * 
  */
+if (dailyActivityManager) {
+  dailyActivityManager.start();
+}
+
 const UpdateDailyActivity = () => {
-  
   stepsLabel.text = `${today.adjusted.steps}`;
   stepsRect.width = GetProgressBarWidth(today.adjusted.steps, goals.steps, STAT_RECT_MAX_WIDTH);
   
-  if (today.local.elevationGain !== undefined) {
-    floorsLabel.text = `${today.adjusted.elevationGain}`;
-    floorsRect.width = GetProgressBarWidth(today.adjusted.elevationGain, goals.elevationGain, STAT_RECT_MAX_WIDTH);
-  }
+  floorsLabel.text = `${today.adjusted.elevationGain}`;
+  floorsRect.width = GetProgressBarWidth(today.adjusted.elevationGain, goals.elevationGain, STAT_RECT_MAX_WIDTH);
   
   calsLabel.text = `${today.adjusted.calories}`;
   calsRect.width = GetProgressBarWidth(today.adjusted.calories, goals.calories, STAT_RECT_MAX_WIDTH);
@@ -110,13 +119,61 @@ const UpdateDailyActivity = () => {
   zoneMinsLabel.text = `${today.adjusted.activeZoneMinutes.total}`;
   zoneMinsRect.width = GetProgressBarWidth(today.adjusted.activeZoneMinutes.total, goals.activeZoneMinutes.total, STAT_RECT_MAX_WIDTH);
 }
+UpdateDailyActivity();
 
-if (appbit.permissions.granted("access_activity")) {
-  UpdateDailyActivity();
-  setInterval(function() {
+
+/**
+ * Display
+ */
+display.onchange = () => {
+  if (display.on) {
+
     UpdateDailyActivity();
-  }, 1000);
+    // start daily activity interval
+    if (!dailyActivityInterval) {
+      dailyActivityInterval = setInterval(function() {
+        UpdateDailyActivity();
+      }, 1000);
+    }
+  
+
+  } else {
+
+    if (dailyActivityInterval)
+      clearInterval(dailyActivityInterval);
+  }
+};
+
+
+
+/**
+ * Body Presence
+ */
+
+
+if (BodyPresenceSensor) {
+  const body : BodyPresenceSensor = new BodyPresenceSensor();
+  body.onreading = (evt : Event) => {
+    if (!body.present) {      
+      heartRateLabel.text = "--";
+      heartRateRect.width = 0;
+
+      dailyActivityManager.stop();
+    } else {
+
+    }
+    
+  };
+
+  body.onerror = (error : SensorErrorEvent) => {
+    console.log(error);
+  };
+
+  body.start();
 }
+
+
+
 
 
 
