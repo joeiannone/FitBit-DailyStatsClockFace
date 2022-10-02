@@ -1,10 +1,29 @@
+/*
+ * @Author: joe.iannone 
+ * @Date: 2022-10-01 21:17:01 
+ * @Last Modified by:   joe.iannone 
+ * @Last Modified time: 2022-10-01 21:17:01 
+ */
 
+/**
+ * 
+ * @param statValue 
+ * @param maxValue 
+ * @param maxWidth 
+ * @returns 
+ */
 const GetProgressBarWidth = (statValue : number, maxValue : number, maxWidth : number) => {
   let percentage : number = statValue / maxValue;
   return (statValue >= maxValue) ? maxWidth : (percentage * maxWidth);
 }
 
 
+/**
+ * 
+ * @param date 
+ * @param clockDisplay 
+ * @returns 
+ */
 const formatTimeString = (date : Date, clockDisplay : string) => {
 
   let hours : number = date.getHours();
@@ -23,6 +42,10 @@ const formatTimeString = (date : Date, clockDisplay : string) => {
   return `${hourStr}:${minStr}`;
 };
 
+
+/**
+ * 
+ */
 export { 
   GetProgressBarWidth,
   formatTimeString
