@@ -1,16 +1,34 @@
+/*
+ * @Author: joe.iannone 
+ * @Date: 2022-10-01 21:16:41 
+ * @Last Modified by: joe.iannone
+ * @Last Modified time: 2022-10-01 21:30:15
+ */
+
 import document from "document";
 import clock, { TickEvent } from "clock";
 import { preferences } from "user-settings";
-import { me as appbit } from "appbit";
 import { HeartRateSensor } from "heart-rate";
-import { today, goals } from "user-activity";
+import { goals, Today } from "user-activity";
 import { me as device } from "device";
 import { battery } from "power";
+import { display } from "display";
+import { BodyPresenceSensor } from "body-presence";
 import SETTINGS from './settings';
 import { GetProgressBarWidth, formatTimeString } from './utils';
+import { DailyActivityManager } from "./dailyActivity";
+
 
 const STAT_RECT_MAX_WIDTH : number = device.screen.width - SETTINGS.RIGHT_PADDING;
 
+var hrm : HeartRateSensor;
+
+const dailyActivityManager : DailyActivityManager = new DailyActivityManager(1);
+
+
+/**
+ * label selectors
+ */
 const dateLabel : Element = document.getElementById('date-label');
 const dayLabel : Element = document.getElementById('day-label');
 const timeLabel : Element = document.getElementById('time-label');
@@ -43,8 +61,11 @@ const handleTick = (evt : TickEvent) => {
   dateLabel.text = dateStr.slice(4, 10);
 };
 
-clock.granularity = "minutes"; // seconds, minutes, hours
-clock.ontick = handleTick;
+if (clock) {
+  clock.granularity = "minutes"; // seconds, minutes, hours
+  clock.ontick = handleTick;
+}
+
 
 /**
  * Battery
@@ -66,25 +87,24 @@ const UpdateBatteryIndicator = (chargeLevel : number) => {
     batteryIndicator.href = "icons/battery-0.png";
 };
 
-UpdateBatteryIndicator(battery.chargeLevel);
-battery.onchange = (evt : Event) => {
+if (battery) {
   UpdateBatteryIndicator(battery.chargeLevel);
+  battery.onchange = (evt : Event) => {
+    UpdateBatteryIndicator(battery.chargeLevel);
+  }
 }
-
 
 
 /**
  * Heart Rate
  */
-if (appbit.permissions.granted("access_heart_rate")) {
-  if (HeartRateSensor) {
-    const hrm = new HeartRateSensor({ frequency: 1 });
-    hrm.onreading = () => {
-      heartRateLabel.text = `${hrm.heartRate}`;
-      heartRateRect.width = GetProgressBarWidth(hrm.heartRate, 220, STAT_RECT_MAX_WIDTH);
-    }
-    hrm.start();
+if (HeartRateSensor) { 
+  hrm = new HeartRateSensor({ frequency: 1 });
+  hrm.onreading = () => {
+    heartRateLabel.text = `${hrm.heartRate}`;
+    heartRateRect.width = GetProgressBarWidth(hrm.heartRate, 220, STAT_RECT_MAX_WIDTH);
   }
+  hrm.start();
 }
 
 
@@ -94,29 +114,58 @@ if (appbit.permissions.granted("access_heart_rate")) {
 /**
  * 
  */
-const UpdateDailyActivity = () => {
-  
-  stepsLabel.text = `${today.adjusted.steps}`;
-  stepsRect.width = GetProgressBarWidth(today.adjusted.steps, goals.steps, STAT_RECT_MAX_WIDTH);
-  
-  if (today.local.elevationGain !== undefined) {
+ if (dailyActivityManager) {
+  dailyActivityManager.onupdate = (today : Today) => {
+
+    stepsLabel.text = `${today.adjusted.steps}`;
+    stepsRect.width = GetProgressBarWidth(today.adjusted.steps, goals.steps, STAT_RECT_MAX_WIDTH);
+    
     floorsLabel.text = `${today.adjusted.elevationGain}`;
     floorsRect.width = GetProgressBarWidth(today.adjusted.elevationGain, goals.elevationGain, STAT_RECT_MAX_WIDTH);
+    
+    calsLabel.text = `${today.adjusted.calories}`;
+    calsRect.width = GetProgressBarWidth(today.adjusted.calories, goals.calories, STAT_RECT_MAX_WIDTH);
+
+    zoneMinsLabel.text = `${today.adjusted.activeZoneMinutes.total}`;
+    zoneMinsRect.width = GetProgressBarWidth(today.adjusted.activeZoneMinutes.total, goals.activeZoneMinutes.total, STAT_RECT_MAX_WIDTH);
   }
-  
-  calsLabel.text = `${today.adjusted.calories}`;
-  calsRect.width = GetProgressBarWidth(today.adjusted.calories, goals.calories, STAT_RECT_MAX_WIDTH);
 
-  zoneMinsLabel.text = `${today.adjusted.activeZoneMinutes.total}`;
-  zoneMinsRect.width = GetProgressBarWidth(today.adjusted.activeZoneMinutes.total, goals.activeZoneMinutes.total, STAT_RECT_MAX_WIDTH);
-}
-
-if (appbit.permissions.granted("access_activity")) {
-  UpdateDailyActivity();
-  setInterval(function() {
-    UpdateDailyActivity();
-  }, 1000);
+  dailyActivityManager.start();
 }
 
 
+/**
+ * Display
+ */
+display.onchange = () => {
+  if (display.on) {
+    if (dailyActivityManager) dailyActivityManager.start();
+    if (hrm) hrm.start();
+  } else {
+    if (dailyActivityManager) dailyActivityManager.stop();
+    if (hrm) hrm.stop();
+    heartRateLabel.text = "--";
+    heartRateRect.width = 0;
+  }
+};
+
+
+/**
+ * Body Presence
+ */
+if (BodyPresenceSensor) {
+  const body = new BodyPresenceSensor();
+  body.onreading = () => {
+    if (!body.present) {
+      if (dailyActivityManager) dailyActivityManager.stop();
+      if (hrm) hrm.stop();
+      heartRateLabel.text = "--";
+      heartRateRect.width = 0;
+    } else {
+      if (dailyActivityManager) dailyActivityManager.start();
+      if (hrm) hrm.start();
+    }
+  };
+  body.start();
+}
 
